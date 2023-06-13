@@ -15,6 +15,7 @@ Table of Contents
         * [example for curl (CONNECT request in https)](#example-for-curl-connect-request-in-https)
         * [example for browser](#example-for-browser)
       * [example for basic authentication](#example-for-basic-authentication)
+      * [example for proxying WebSocket](#example-for-proxying-websocket)
    * [Install](#install)
       * [select patch](#select-patch)
       * [build nginx](#build-nginx)
@@ -325,6 +326,13 @@ Example for Basic Authentication
 
 We can do access control on CONNECT request using nginx auth basic module.  
 See [this guide](https://github.com/chobits/ngx_http_proxy_connect_module/issues/42#issuecomment-502985437) for more details.
+
+
+Example for proxying WebSocket
+------------------------------
+
+* Note that nginx has its own WebSocket reverse proxy module, which is is not limited to the CONNECT tunnel, see [nginx.org doc: Nginx WebSocket proxying](https://nginx.org/en/docs/http/websocket.html) and [nginx.com blog: NGINX as a WebSocket Proxy](https://www.nginx.com/blog/websocket-nginx/).
+* This module enables the WebSocket protocol to work over the CONNECT tunnel, see https://github.com/chobits/ngx_http_proxy_connect_module/issues/267#issuecomment-1575449174
 
 
 Install
