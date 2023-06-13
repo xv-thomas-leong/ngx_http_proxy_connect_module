@@ -348,6 +348,7 @@ Select patch
 | 1.19.x ~ 1.21.0  | YES | [proxy_connect_rewrite_1018.patch](patch/proxy_connect_rewrite_1018.patch) |
 | 1.21.1 ~ 1.22.x  | YES | [proxy_connect_rewrite_102101.patch](patch/proxy_connect_rewrite_102101.patch) |
 | 1.23.x ~ 1.24.0  | YES | [proxy_connect_rewrite_102101.patch](patch/proxy_connect_rewrite_102101.patch) |
+| 1.25.0 ~ 1.25.x  | YES | [proxy_connect_rewrite_102101.patch](patch/proxy_connect_rewrite_102101.patch) |
 
 | OpenResty version | enable REWRITE phase | patch |
 | --: | --: | --: |
@@ -714,7 +715,8 @@ Nginx Compatibility
 
 The latest module is compatible with the following versions of nginx:
 
-* 1.23.4  (version of 1.23.x)
+* 1.25.0  (mainline version of 1.25.x)
+* 1.24.0  (version of 1.24.x)
 * 1.22.1  (version of 1.22.x)
 * 1.20.2  (version of 1.20.x)
 * 1.18.0  (version of 1.18.x)
@@ -731,11 +733,11 @@ OpenResty Compatibility
 
 The latest module is compatible with the following versions of OpenResty:
 
-* 1.13.6 (version: 1.13.6.2)
-* 1.15.8 (version: 1.15.8.1)
-* 1.17.8 (version: 1.17.8.2)
+* 1.21.4 (version: 1.21.4.2 RC1)
 * 1.19.3 (version: 1.19.3.1)
-* 1.21.4 (version: 1.21.4.1)
+* 1.17.8 (version: 1.17.8.2)
+* 1.15.8 (version: 1.15.8.1)
+* 1.13.6 (version: 1.13.6.2)
 
 Tengine Compatibility
 ---------------------
