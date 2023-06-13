@@ -15,6 +15,7 @@ Table of Contents
         * [example for curl (CONNECT request in https)](#example-for-curl-connect-request-in-https)
         * [example for browser](#example-for-browser)
       * [example for basic authentication](#example-for-basic-authentication)
+      * [example for proxying WebSocket](#example-for-proxying-websocket)
    * [Install](#install)
       * [select patch](#select-patch)
       * [build nginx](#build-nginx)
@@ -327,6 +328,13 @@ We can do access control on CONNECT request using nginx auth basic module.
 See [this guide](https://github.com/chobits/ngx_http_proxy_connect_module/issues/42#issuecomment-502985437) for more details.
 
 
+Example for proxying WebSocket
+------------------------------
+
+* Note that nginx has its own WebSocket reverse proxy module, which is is not limited to the CONNECT tunnel, see [nginx.org doc: Nginx WebSocket proxying](https://nginx.org/en/docs/http/websocket.html) and [nginx.com blog: NGINX as a WebSocket Proxy](https://www.nginx.com/blog/websocket-nginx/).
+* This module enables the WebSocket protocol to work over the CONNECT tunnel, see https://github.com/chobits/ngx_http_proxy_connect_module/issues/267#issuecomment-1575449174
+
+
 Install
 =======
 
@@ -348,6 +356,7 @@ Select patch
 | 1.19.x ~ 1.21.0  | YES | [proxy_connect_rewrite_1018.patch](patch/proxy_connect_rewrite_1018.patch) |
 | 1.21.1 ~ 1.22.x  | YES | [proxy_connect_rewrite_102101.patch](patch/proxy_connect_rewrite_102101.patch) |
 | 1.23.x ~ 1.24.0  | YES | [proxy_connect_rewrite_102101.patch](patch/proxy_connect_rewrite_102101.patch) |
+| 1.25.0 ~ 1.25.x  | YES | [proxy_connect_rewrite_102101.patch](patch/proxy_connect_rewrite_102101.patch) |
 
 | OpenResty version | enable REWRITE phase | patch |
 | --: | --: | --: |
@@ -714,7 +723,8 @@ Nginx Compatibility
 
 The latest module is compatible with the following versions of nginx:
 
-* 1.23.4  (version of 1.23.x)
+* 1.25.0  (mainline version of 1.25.x)
+* 1.24.0  (version of 1.24.x)
 * 1.22.1  (version of 1.22.x)
 * 1.20.2  (version of 1.20.x)
 * 1.18.0  (version of 1.18.x)
@@ -731,11 +741,11 @@ OpenResty Compatibility
 
 The latest module is compatible with the following versions of OpenResty:
 
-* 1.13.6 (version: 1.13.6.2)
-* 1.15.8 (version: 1.15.8.1)
-* 1.17.8 (version: 1.17.8.2)
+* 1.21.4 (version: 1.21.4.2 RC1)
 * 1.19.3 (version: 1.19.3.1)
-* 1.21.4 (version: 1.21.4.1)
+* 1.17.8 (version: 1.17.8.2)
+* 1.15.8 (version: 1.15.8.1)
+* 1.13.6 (version: 1.13.6.2)
 
 Tengine Compatibility
 ---------------------
