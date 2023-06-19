@@ -83,7 +83,7 @@ server {
 }
 ```
 
-* The `resolver` directive MUST be configured globally in `http {}` block.
+* The `resolver` directive MUST be configured globally in `server {}` block (or `http {}` block).
 * Any `location {}` block, `upstream {}` block and any other standard backend/upstream directives, such as `proxy_pass`, do not impact the functionality of this module. (The proxy_connect module only executes the logic for requests that use the CONNECT method and that have a data flow under this tunnel.)
   * If you dont want to handle non-CONNECT requests, you can modify `location {}` block as following:
     ```
