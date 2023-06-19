@@ -62,25 +62,35 @@ Configuration Example
 ---------------------
 
 ```nginx
- server {
-     listen                         3128;
+server {
+    listen                         3128;
 
-     # dns resolver used by forward proxying
-     resolver                       8.8.8.8;
+    # dns resolver used by forward proxying
+    resolver                       8.8.8.8;
 
-     # forward proxy for CONNECT request
-     proxy_connect;
-     proxy_connect_allow            443 563;
-     proxy_connect_connect_timeout  10s;
-     proxy_connect_data_timeout     10s;
+    # forward proxy for CONNECT requests
+    proxy_connect;
+    proxy_connect_allow            443 563;
+    proxy_connect_connect_timeout  10s;
+    proxy_connect_data_timeout     10s;
 
-     # forward proxy for non-CONNECT request
-     location / {
-         proxy_pass http://$host;
-         proxy_set_header Host $host;
-     }
- }
+    # defined by yourself for non-CONNECT requests
+    # Example: reverse proxy for non-CONNECT requests
+    location / {
+        proxy_pass http://$host;
+        proxy_set_header Host $host;
+    }
+}
 ```
+
+* The `resolver` directive MUST be configured globally in `http {}` block.
+* Any `location {}` block, `upstream {}` block and any other standard backend/upstream directives, such as `proxy_pass`, do not impact the functionality of this module. (The proxy_connect module only executes the logic for requests that use the CONNECT method and that have a data flow under this tunnel.)
+  * If you dont want to handle non-CONNECT requests, you can modify `location {}` block as following:
+    ```
+    location / {
+        return 403 "Non-CONNECT requests are forbidden";
+    }
+    ```
 
 Example for curl
 ----------------
@@ -161,29 +171,30 @@ configuration example for CONNECT request in HTTPS
 --------------------------------------------------
 
 ```nginx
- server {
-     listen                         3128 ssl;
+server {
+    listen                         3128 ssl;
 
-     # self signed certificate generated via openssl command
-     ssl_certificate_key            /path/to/server.key;
-     ssl_certificate                /path/to/server.crt;
-     ssl_session_cache              shared:SSL:1m;
+    # self signed certificate generated via openssl command
+    ssl_certificate_key            /path/to/server.key;
+    ssl_certificate                /path/to/server.crt;
+    ssl_session_cache              shared:SSL:1m;
 
-     # dns resolver used by forward proxying
-     resolver                       8.8.8.8;
+    # dns resolver used by forward proxying
+    resolver                       8.8.8.8;
 
-     # forward proxy for CONNECT request
-     proxy_connect;
-     proxy_connect_allow            443 563;
-     proxy_connect_connect_timeout  10s;
-     proxy_connect_data_timeout     10s;
+    # forward proxy for CONNECT request
+    proxy_connect;
+    proxy_connect_allow            443 563;
+    proxy_connect_connect_timeout  10s;
+    proxy_connect_data_timeout     10s;
 
-     # forward proxy for non-CONNECT request
-     location / {
-         proxy_pass http://$host;
-         proxy_set_header Host $host;
-     }
- }
+    # defined by yourself for non-CONNECT request
+    # Example: reverse proxy for non-CONNECT requests
+    location / {
+        proxy_pass http://$host;
+        proxy_set_header Host $host;
+    }
+}
 ```
 
 example for curl (CONNECT request in https)
