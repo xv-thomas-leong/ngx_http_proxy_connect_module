@@ -34,6 +34,7 @@ typedef struct {
 
     size_t                               send_lowat;
     size_t                               buffer_size;
+    size_t                               rate_limit;
 
     ngx_http_complex_value_t            *address;
     ngx_http_proxy_connect_address_t    *local;
@@ -126,6 +127,8 @@ static char* ngx_http_proxy_connect_bind(ngx_conf_t *cf, ngx_command_t *cmd,
     void *conf);
 static ngx_int_t ngx_http_proxy_connect_set_local(ngx_http_request_t *r,
   ngx_http_proxy_connect_upstream_t *u, ngx_http_proxy_connect_address_t *local);
+static ngx_int_t ngx_http_proxy_connect_set_rate_limit(ngx_http_request_t *r,
+    ngx_connection_t *c, size_t rate_limit);
 static ngx_int_t ngx_http_proxy_connect_variable_get_time(ngx_http_request_t *r,
     ngx_http_variable_value_t *v, uintptr_t data);
 static void ngx_http_proxy_connect_variable_set_time(ngx_http_request_t *r,
@@ -218,6 +221,13 @@ static ngx_command_t  ngx_http_proxy_connect_commands[] = {
       ngx_http_set_complex_value_slot,
       NGX_HTTP_LOC_CONF_OFFSET,
       offsetof(ngx_http_proxy_connect_loc_conf_t, response),
+      NULL },
+
+    { ngx_string("proxy_connect_rate"),
+      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_CONF_TAKE1,
+      ngx_conf_set_size_slot,
+      NGX_HTTP_LOC_CONF_OFFSET,
+      offsetof(ngx_http_proxy_connect_loc_conf_t, rate_limit),
       NULL },
 
     ngx_null_command
@@ -595,6 +605,11 @@ ngx_http_proxy_connect_send_connection_established(ngx_http_request_t *r)
                 }
 
                 ctx->send_established_done = 1;
+
+                if (u->conf->rate_limit > 0) {
+                    ngx_http_proxy_connect_set_rate_limit(r, u->peer.connection, u->conf->rate_limit);
+                    ngx_http_proxy_connect_set_rate_limit(r, r->connection, u->conf->rate_limit);
+                }
 
                 r->write_event_handler =
                                         ngx_http_proxy_connect_write_downstream;
@@ -1117,7 +1132,6 @@ ngx_http_proxy_connect_process_connect(ngx_http_request_t *r,
         ngx_add_timer(c->write, ctx->connect_timeout);
         return;
     }
-
     ngx_http_proxy_connect_send_connection_established(r);
 }
 
@@ -1866,6 +1880,36 @@ ngx_http_proxy_connect_bind(ngx_conf_t *cf, ngx_command_t *cmd,
 
 
 static ngx_int_t
+ngx_http_proxy_connect_set_rate_limit(ngx_http_request_t *r,
+    ngx_connection_t *c, size_t rate_limit)
+{
+#ifdef SO_MAX_PACING_RATE
+    uint32_t rate;
+    
+    if (rate_limit == 0) {
+        return NGX_OK;
+    }
+    
+    rate = (uint32_t) rate_limit;
+    
+    if (setsockopt(c->fd, SOL_SOCKET, SO_MAX_PACING_RATE, &rate, sizeof(rate)) == -1) {
+        ngx_log_error(NGX_LOG_WARN, r->connection->log, ngx_errno,
+                      "proxy_connect: setsockopt(SO_MAX_PACING_RATE, %uz) failed", rate_limit);
+        return NGX_ERROR;
+    }
+    
+    ngx_log_error(NGX_LOG_INFO, r->connection->log, 0,
+                   "proxy_connect: applied rate limit %uz bytes/sec to fd %d", rate_limit, c->fd);
+#else
+    ngx_log_error(NGX_LOG_WARN, r->connection->log, 0,
+                  "proxy_connect: SO_MAX_PACING_RATE not supported on this platform");
+#endif
+    
+    return NGX_OK;
+}
+
+
+static ngx_int_t
 ngx_http_proxy_connect_set_local(ngx_http_request_t *r,
     ngx_http_proxy_connect_upstream_t *u, ngx_http_proxy_connect_address_t *local)
 {
@@ -1944,6 +1988,7 @@ ngx_http_proxy_connect_create_loc_conf(ngx_conf_t *cf)
 
     conf->send_lowat = NGX_CONF_UNSET_SIZE;
     conf->buffer_size = NGX_CONF_UNSET_SIZE;
+    conf->rate_limit = NGX_CONF_UNSET_SIZE;
 
     conf->local = NGX_CONF_UNSET_PTR;
 
@@ -1971,6 +2016,8 @@ ngx_http_proxy_connect_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
     ngx_conf_merge_size_value(conf->send_lowat, prev->send_lowat, 0);
 
     ngx_conf_merge_size_value(conf->buffer_size, prev->buffer_size, 16384);
+
+    ngx_conf_merge_size_value(conf->rate_limit, prev->rate_limit, 0);
 
     if (conf->address == NULL) {
         conf->address = prev->address;
